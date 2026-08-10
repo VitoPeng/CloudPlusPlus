@@ -11,6 +11,8 @@ target_compile_options(Cloud++ PRIVATE -Wall -g)
 file(GLOB_RECURSE SRCS
   src/*.cpp
   src/*.hpp
+  src/**/*.cpp
+  src/**/*.hpp
 )
 
 target_sources(Cloud++
