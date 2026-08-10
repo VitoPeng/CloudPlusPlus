@@ -9,11 +9,11 @@ add_executable(Cloud++)
 
 target_compile_options(Cloud++ PRIVATE -Wall -g)
 
-file(GLOB_RECURSE SRCS
-  src/*.cpp
-  src/*.hpp
-  src/**/*.cpp
-  src/**/*.hpp
+file(GLOB SRCS
+  ./src/*.cpp
+  ./src/*.hpp
+  ./src/commands/*.cpp
+  ./src/commands/*.hpp
 )
 
 target_sources(Cloud++

@@ -1,5 +1,5 @@
-#include "../../include/CommandExecutor.hpp"
-#include "../../include/logging.hpp"
+#include "./CommandExecutor.hpp"
+#include "../logging.hpp"
 #include <iostream>
 #include <string>
 #include <unordered_map>

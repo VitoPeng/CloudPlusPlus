@@ -1,5 +1,5 @@
-#include "../include/run.hpp"
-#include "../include/CommandExecutor.hpp"
+#include "./run.hpp"
+#include "./commands/CommandExecutor.hpp"
 #include <string>
 
 int run(std::string command, int argc, char *argv[]) {

@@ -1,5 +1,5 @@
-#include "../include/logging.hpp"
-#include "../include/run.hpp"
+#include "./logging.hpp"
+#include "./run.hpp"
 #include <format>
 #include <iostream>
 

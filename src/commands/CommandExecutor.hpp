@@ -1,5 +1,5 @@
-#ifndef COMMAND_EXECUTOR
-#define COMMAND_EXECUTOR
+#ifndef COMMAND_EXECUTOR_H
+#define COMMAND_EXECUTOR_H
 
 #include <functional>
 #include <string>

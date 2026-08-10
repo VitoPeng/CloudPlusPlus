@@ -1,4 +1,4 @@
-#include "../../include/logging.hpp"
+#include "./logging.hpp"
 #include <string>
 
 // https://stackoverflow.com/a/11421489
