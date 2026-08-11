@@ -27,7 +27,8 @@ int CommandExecutor::execute(std::string command, int argc, char *argv[]) {
     std::string errorMessage =
         std::string("Command \"").append(command).append("\" not found\n");
 
-    writeColoured(errorMessage, COLOUR_FG::RED, COLOUR_BG::DEFAULT, &std::cerr);
+    write_coloured(errorMessage, COLOUR_FG::RED, COLOUR_BG::DEFAULT,
+                   &std::cerr);
 
     return 1;
   }

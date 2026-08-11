@@ -45,7 +45,7 @@ enum class COLOUR_BG {
   BRIGHT_WHITE = 107,
 };
 
-void writeColoured(std::string text, COLOUR_FG fg = COLOUR_FG::DEFAULT,
-                   COLOUR_BG bg = COLOUR_BG::DEFAULT,
-                   std::ostream *stream = &std::cout);
+void write_coloured(std::string text, COLOUR_FG fg = COLOUR_FG::DEFAULT,
+                    COLOUR_BG bg = COLOUR_BG::DEFAULT,
+                    std::ostream *stream = &std::cout);
 #endif
