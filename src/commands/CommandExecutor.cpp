@@ -1,5 +1,7 @@
-#include "./CommandExecutor.hpp"
+#include "./config.hpp"
+
 #include "../logging.hpp"
+#include "./CommandExecutor.hpp"
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -9,6 +11,10 @@ CommandExecutor::CommandExecutor() {
     std::cout << "No help page yet!\n";
 
     return 0;
+  };
+
+  commands["config"] = [](int argc, char *argv[]) {
+    return config(argc, argv);
   };
 
   alias("help", "-h");
