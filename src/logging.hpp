@@ -48,4 +48,8 @@ enum class COLOUR_BG {
 void write_coloured(std::string text, COLOUR_FG fg = COLOUR_FG::DEFAULT,
                     COLOUR_BG bg = COLOUR_BG::DEFAULT,
                     std::ostream *stream = &std::cout);
+
+void write_error(std::string text, bool new_line = true);
+void write_warning(std::string text, bool new_line = true);
+
 #endif

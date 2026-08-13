@@ -1,7 +1,7 @@
 #include "./config.hpp"
-#include "../../libs/toml.hpp"
 #include "../logging.hpp"
 #include "query.h"
+#include "toml.hpp"
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -28,17 +28,15 @@ int config(int argc, char **argv) {
     if (argument.starts_with("--")) {
       if (i < num_arguments - 1) {
         if (settings.find(argument) != settings.end()) {
-          write_coloured(std::format("Warning: duplicate value for argument "
-                                     "{}. Latest value will be used\n",
-                                     argument),
-                         COLOUR_FG::YELLOW);
+          write_warning(std::format("Warning: duplicate value for argument "
+                                    "{}. Latest value will be used",
+                                    argument));
         }
 
         std::string argument_value = arguments[++i];
         settings.insert({argument, argument_value});
       } else {
-        write_coloured(std::format("Missing value for argument {}\n", argument),
-                       COLOUR_FG::YELLOW);
+        write_warning(std::format("Missing value for argument {}", argument));
       }
     } else if (argument.starts_with("-")) {
       flags.insert(argument);
@@ -58,7 +56,7 @@ int config(int argc, char **argv) {
 
   if (!std::filesystem::exists(CONFIG_FILE_PATH)) {
     // create new empty file
-    std::cout << CONFIG_FILE_PATH << " not found; creating config file\n";
+    std::cout << CONFIG_FILE_PATH << " not found. Creating config file\n";
     std::ofstream config_file(CONFIG_FILE_PATH);
     config_file.close();
   }
@@ -83,9 +81,8 @@ int config(int argc, char **argv) {
         password.c_str());
 
     if (!connection.connected()) {
-      write_coloured(
-          std::format("Error: connection failure: {}", connection.error()),
-          COLOUR_FG::RED, COLOUR_BG::DEFAULT, &std::cerr);
+      write_error(
+          std::format("Error: connection failure: {}", connection.error()));
 
       return 1;
     }
@@ -95,25 +92,26 @@ int config(int argc, char **argv) {
     query.execute();
 
     if (connection.error() != std::string("")) {
-      write_coloured(std::format("Error: {}\n", connection.error()),
-                     COLOUR_FG::RED, COLOUR_BG::DEFAULT, &std::cerr);
+      write_error(std::format("Error: {}\n", connection.error()));
+
+      return 1;
     }
+
+    return 0;
   } catch (const mysqlpp::ConnectionFailed &error) {
     switch (error.errnum()) {
     case 1045: {
-      write_coloured("Error: incorrect server credentials\n", COLOUR_FG::RED,
-                     COLOUR_BG::DEFAULT, &std::cerr);
+      write_error("Error: incorrect server credentials");
+
+      return 1;
     }
     default: {
-      write_coloured(std::format("Error: {}\n", error.what()), COLOUR_FG::RED,
-                     COLOUR_BG::DEFAULT, &std::cerr);
+      write_error(std::format("Error: {}\n", error.what()));
+
       return 1;
-      break;
     }
     }
   }
-
-  return 0;
 }
 
 std::string
