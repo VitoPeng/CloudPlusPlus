@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <mysql++.h>
+#include <system_error>
 #include <unordered_map>
 
 std::string
@@ -43,6 +44,12 @@ int config(int argc, char **argv) {
     }
   }
 
+  if (settings.find("--directory") == settings.end()) {
+    write_error("--directory option not provided");
+
+    return 1;
+  }
+
   const std::string CONFIG_DIR =
       std::string(std::getenv("HOME")).append(("/.config/cloud++/"));
   const std::string CONFIG_FILE = "config.toml";
@@ -70,6 +77,27 @@ int config(int argc, char **argv) {
                               settings, &configuration);
   std::string user = settings_or_config_file("--username", "user", "", settings,
                                              &configuration);
+  std::string directory = settings_or_config_file(
+      "--directory", "directory", "./files", settings, &configuration);
+
+  try {
+    directory = std::filesystem::weakly_canonical(directory);
+  } catch (std::filesystem::filesystem_error error) {
+    directory = std::filesystem::weakly_canonical("./files");
+  }
+
+  configuration.insert_or_assign("directory", directory);
+
+  std::error_code error_code;
+
+  bool successful = std::filesystem::create_directories(directory, error_code);
+
+  if (!successful && error_code.value() != 0) {
+    write_error(std::format("Failed to create directory \"{}\". Error: {}",
+                            directory, error_code.message()));
+
+    return 1;
+  }
 
   std::ofstream file(CONFIG_FILE_PATH);
   file << configuration;
@@ -124,7 +152,8 @@ settings_or_config_file(std::string setting_name, std::string config_file_param,
   auto settings_iterator = settings.find(setting_name);
 
   if (settings_iterator != settings.end()) {
-    value = settings_iterator->second;
+    value = settings_iterator->second == "" ? default_value
+                                            : settings_iterator->second;
   }
 
   (*config).insert_or_assign(config_file_param, value);
