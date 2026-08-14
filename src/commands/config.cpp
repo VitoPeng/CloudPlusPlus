@@ -1,15 +1,18 @@
 #include "./config.hpp"
-#include "../logging.hpp"
-#include "exceptions.h"
-#include "query.h"
-#include "toml.hpp"
+
+#include <mysql++.h>
+
 #include <filesystem>
 #include <format>
 #include <fstream>
 #include <iostream>
-#include <mysql++.h>
 #include <system_error>
 #include <unordered_map>
+
+#include "../logging.hpp"
+#include "exceptions.h"
+#include "query.h"
+#include "toml.hpp"
 
 const std::string CONFIG_DIR =
     std::string(std::getenv("HOME")).append(("/.config/cloud++/"));
@@ -17,15 +20,16 @@ const std::string CONFIG_FILE = "config.toml";
 const std::string CONFIG_FILE_PATH =
     std::filesystem::path(CONFIG_DIR).concat(CONFIG_FILE).string();
 
-std::string
-settings_or_config_file(std::string setting_name, std::string config_file_param,
-                        std::string default_value,
-                        std::unordered_map<std::string, std::string> settings,
-                        toml::table *config);
-int try_create_database(Config *configuration);
+std::string settings_or_config_file(
+    std::string setting_name,
+    std::string config_file_param,
+    std::string default_value,
+    std::unordered_map<std::string, std::string> settings,
+    toml::table* config);
+int try_create_database(Config* configuration);
 
-int config(int argc, char **argv) {
-  char **arguments = argv + 2;
+int config(int argc, char** argv) {
+  char** arguments = argv + 2;
   int num_arguments = argc - 2;
 
   std::set<std::string> flags;
@@ -37,9 +41,10 @@ int config(int argc, char **argv) {
     if (argument.starts_with("--")) {
       if (i < num_arguments - 1) {
         if (settings.find(argument) != settings.end()) {
-          write_warning(std::format("Warning: duplicate value for argument "
-                                    "{}. Latest value will be used",
-                                    argument));
+          write_warning(
+              std::format("Warning: duplicate value for argument "
+                          "{}. Latest value will be used",
+                          argument));
         }
 
         std::string argument_value = arguments[++i];
@@ -50,12 +55,6 @@ int config(int argc, char **argv) {
     } else if (argument.starts_with("-")) {
       flags.insert(argument);
     }
-  }
-
-  if (settings.find("--directory") == settings.end()) {
-    write_error("--directory option not provided");
-
-    return 1;
   }
 
   if (!std::filesystem::exists(CONFIG_DIR)) {
@@ -109,27 +108,28 @@ int config(int argc, char **argv) {
 
   try {
     return try_create_database(&configuration);
-  } catch (const mysqlpp::ConnectionFailed &error) {
+  } catch (const mysqlpp::ConnectionFailed& error) {
     switch (error.errnum()) {
-    case 1045: {
-      write_error("Error: incorrect server credentials");
+      case 1045: {
+        write_error("Error: incorrect server credentials");
 
-      return 1;
-    }
-    default: {
-      write_error(std::format("Error: {}\n", error.what()));
+        return 1;
+      }
+      default: {
+        write_error(std::format("Error: {}\n", error.what()));
 
-      return 1;
-    }
+        return 1;
+      }
     }
   }
 }
 
-std::string
-settings_or_config_file(std::string setting_name, std::string config_file_param,
-                        std::string default_value,
-                        std::unordered_map<std::string, std::string> settings,
-                        toml::table *config) {
+std::string settings_or_config_file(
+    std::string setting_name,
+    std::string config_file_param,
+    std::string default_value,
+    std::unordered_map<std::string, std::string> settings,
+    toml::table* config) {
   std::string value = (*config)[config_file_param].value_or(default_value);
   auto settings_iterator = settings.find(setting_name);
 
@@ -141,7 +141,7 @@ settings_or_config_file(std::string setting_name, std::string config_file_param,
   return value;
 }
 
-void save_config(Config *configuration) {
+void save_config(Config* configuration) {
   toml::table config_file = toml::parse_file(CONFIG_FILE_PATH);
 
   config_file.insert_or_assign("user", configuration->user);
@@ -176,7 +176,7 @@ Config get_config() {
   };
 }
 
-int try_create_database(Config *configuration) {
+int try_create_database(Config* configuration) {
   mysqlpp::TCPConnection connection = mysqlpp::TCPConnection(
       configuration->address.c_str(), nullptr,
       configuration->user == "" ? nullptr : configuration->user.c_str(),
@@ -202,32 +202,33 @@ int try_create_database(Config *configuration) {
 
   connection.select_db("Cloud++");
 
-  mysqlpp::Query create_user_table = connection.query("\
+  connection
+      .query(
+          "\
 CREATE TABLE IF NOT EXISTS `Users` (\
 user_id BINARY(16) PRIMARY KEY,\
 username VARCHAR(64) NOT NULL UNIQUE,\
 password_hash BINARY(32) NOT NULL,\
 password_salt BINARY(4) NOT NULL\
-)");
+)")
+      .execute();
 
-  create_user_table.execute();
-
-  mysqlpp::Query create_files_table = connection.query("\
+  connection
+      .query(
+          "\
 CREATE TABLE IF NOT EXISTS `Files` (\
 owner BINARY(16) NOT NULL,\
 file_id BINARY(16) PRIMARY KEY,\
 location VARCHAR(1024) NOT NULL,\
 FOREIGN KEY (`owner`) \
 REFERENCES `Users` (`user_id`)\
-)");
-
-  create_files_table.execute();
+)")
+      .execute();
 
   try {
-    mysqlpp::Query create_index_on_files = connection.query(
-        "ALTER TABLE `Files` ADD INDEX `owner_index` (`owner`)");
-    create_index_on_files.execute();
-  } catch (const mysqlpp::BadQuery &error) {
+    connection.query("ALTER TABLE `Files` ADD INDEX `owner_index` (`owner`)")
+        .execute();
+  } catch (const mysqlpp::BadQuery& error) {
     // ignore the error if it reports a duplicate index
     if (error.errnum() != 1061) {
       throw error;

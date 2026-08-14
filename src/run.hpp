@@ -3,6 +3,6 @@
 
 #include <string>
 
-int run(std::string command, int argc, char *argv[]);
+int run(std::string command, int argc, char* argv[]);
 
 #endif

@@ -1,8 +1,9 @@
-#include "./logging.hpp"
-#include "./run.hpp"
 #include <format>
 
-int main(int argc, char *argv[]) {
+#include "./logging.hpp"
+#include "./run.hpp"
+
+int main(int argc, char* argv[]) {
   int numArguments = argc - 1;
 
   if (numArguments == 0) {
@@ -11,7 +12,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  char *command = argv[1];
+  char* command = argv[1];
 
   int returnCode = run(command, argc, argv);
 

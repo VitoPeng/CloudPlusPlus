@@ -1,19 +1,20 @@
-#include "./config.hpp"
-
-#include "../logging.hpp"
 #include "./CommandExecutor.hpp"
+
 #include <iostream>
 #include <string>
 #include <unordered_map>
 
+#include "../logging.hpp"
+#include "./config.hpp"
+
 CommandExecutor::CommandExecutor() {
-  commands["help"] = [](int argc, char *argv[]) {
+  commands["help"] = [](int argc, char* argv[]) {
     std::cout << "No help page yet!\n";
 
     return 0;
   };
 
-  commands["config"] = [](int argc, char *argv[]) {
+  commands["config"] = [](int argc, char* argv[]) {
     return config(argc, argv);
   };
 
@@ -24,7 +25,7 @@ void CommandExecutor::alias(std::string command, std::string alias) {
   commands[alias] = commands[command];
 }
 
-int CommandExecutor::execute(std::string command, int argc, char *argv[]) {
+int CommandExecutor::execute(std::string command, int argc, char* argv[]) {
   auto executor = commands.find(command);
 
   if (executor != commands.end()) {

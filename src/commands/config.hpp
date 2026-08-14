@@ -10,9 +10,9 @@ typedef struct config {
   std::string directory;
 } Config;
 
-int config(int argc, char *argv[]);
+int config(int argc, char* argv[]);
 
-void save_config(Config *configuration);
+void save_config(Config* configuration);
 Config get_config();
 
 #endif
